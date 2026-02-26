@@ -20,7 +20,7 @@ module.exports = {
                         bn: "আপনার ছবিকে বিভিন্ন আর্ট স্টাইলে রূপান্তর করুন",
                         vi: "Chuyển đổi ảnh của bạn thành nhiều phong cách nghệ thuật khác nhau"
                 },
-                category: "image",
+                category: "Image gen",
                 guide: {
                         en: "{pn} [1-100] Reply to a photo or {pn} list",
                         bn: "{pn} [১-১০০] ছবিতে রিপ্লাই দিন) অথবা {pn} list",
