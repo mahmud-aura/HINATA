@@ -7,7 +7,8 @@
     "https://mahmud-global-apis-007.onrender.com"
   ],
   "mahmud": [
-    "https://mahmud-rest-api-v3.onrender.com"
+    "https://mahmud-rest-api-v3.onrender.com",
+    "https://shazam-api-v4.onrender.com"
   ],
   "album": "https://mahmud-album-api.onrender.com",
   "ytb": "https://mahmud-ytb.vercel.app",
