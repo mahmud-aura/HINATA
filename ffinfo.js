@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const mahmud = async () => {
+const baseApiUrl = async () => {
         const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
         return base.data.mahmud;
 };
@@ -8,29 +8,22 @@ const mahmud = async () => {
 module.exports = {
         config: {
                 name: "ffinfo",
-                version: "1.7",
+                version: "3.7",
                 author: "MahMUD",
-                countDown: 5,
+                countDown: 10,
                 role: 0,
                 description: {
-                        bn: "ফ্রি ফায়ার প্লেয়ারের বিস্তারিত তথ্য দেখুন",
                         en: "Get full Free Fire player information",
                         vi: "Lấy thông tin chi tiết người chơi Free Fire"
                 },
-                category: "game",
+                category: "info",
                 guide: {
-                        bn: '   {pn} [UID]: প্লেয়ার আইডি দিন',
                         en: '   {pn} [UID]: Provide player UID',
                         vi: '   {pn} [UID]: Cung cấp UID người chơi'
                 }
         },
 
         langs: {
-                bn: {
-                        noUid: "• দয়া করে একটি ফ্রি ফায়ার UID দিন।",
-                        notFound: "× প্লেয়ার খুঁজে পাওয়া যায়নি!",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।\n•WhatsApp: 01836298139"
-                },
                 en: {
                         noUid: "• Please provide a Free Fire UID.\n\nexample: !ffinfo 404394256",
                         notFound: "× Player not found!",
@@ -51,27 +44,21 @@ module.exports = {
                         const uid = args[0]; if (!uid) return message.reply(getLang("noUid"));
                         api.setMessageReaction("⏳", event.messageID, () => {}, true);
 
-                        const baseURL = await mahmud();
-                        const res = await axios.get(`${baseURL}/api/ffinfo?uid=${uid}`);
-                        const data = res.data;
+                        const response = await axios.get(`${await baseApiUrl()}/api/mahmud/ffinfo?uid=${uid}`);
+                        const data = response.data;
 
-                        if (!data || !data.success) { 
+                        if (!data || !data.success || !data.message) { 
                                 api.setMessageReaction("❌", event.messageID, () => {}, true);
                                 return message.reply(getLang("notFound")); 
                         }
 
-                        const b = data.basicInfo || {}, g = data.guildInfo || {}, p = data.petInfo || {}, s = data.socialInfo || {}, c = data.creditScore || {};
-                        const poweredBy = data.poweredBy;
-
-                        const msg = `#PLAYER INFO\n• Name: ${b.name || "N/A"}\n• UID: ${b.uid || uid}\n• Region: ${b.region || "N/A"}\n• Level: ${b.level || "N/A"}\n• Likes: ${b.likes || "0"}\n• EXP: ${b.exp || "0"}\n\n#RANK INFO\n• BR Rank: ${b.rank || "N/A"}\n• BR Points: ${b.rankPoints || "0"}\n• CS Rank: ${b.csRank || "N/A"}\n• CS Points: ${b.csPoints || "0"}\n• Max Rank: ${b.maxRank || "N/A"}\n• Max CS Rank: ${b.maxCsRank || "N/A"}\n\n#ACCOUNT INFO\n• Elite Pass: ${b.elitePass ? "Yes" : "No"}\n• Badges: ${b.badges || "0"}\n• Season: ${b.season || "N/A"}\n• Version: ${b.releaseVersion || "N/A"}\n• Created: ${b.createAt || "N/A"}\n\n#GUILD INFO\n• Guild: ${g.guildName || "No Guild"}\n• Guild ID: ${g.guildId || "N/A"}\n• Level: ${g.guildLevel || "N/A"}\n• Members: ${g.members || "0"}/${g.capacity || "0"}\n• Leader: ${g.leader?.name || "N/A"}\n\n#PET INFO\n• Name: ${p.name || "No Pet"}\n• Level: ${p.level || "0"}\n• EXP: ${p.exp || "0"}\n• Skin ID: ${p.skinId || "N/A"}\n\n#SOCIAL INFO\n• Gender: ${s.gender || "N/A"}\n• Language: ${s.language || "N/A"}\n• Signature: ${s.signature || "No Signature"}\n\n#CREDIT SCORE\n• Score: ${c.score || "0"}\n• Reward: ${c.reward || "N/A"}\n• Period End: ${c.periodEnd || "N/A"}\n\n${poweredBy}`;
-
                         api.setMessageReaction("✅", event.messageID, () => {}, true);
-                        return message.reply(msg);
+                        return message.reply(data.message);
 
                 } catch (err) {
-                        console.error("FFINFO Error:", err);
+                        console.error("error:", err);
                         api.setMessageReaction("❌", event.messageID, () => {}, true);
-                        return message.reply(getLang("error", err.message));
+                        return message.reply(getLang("error", err.response?.data?.message || err.message));
                 }
         }
 };
