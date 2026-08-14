@@ -9,35 +9,33 @@ module.exports = {
         config: {
                 name: "prompt",
                 aliases: ["p"],
-                version: "1.7",
+                version: "3.7",
                 author: "MahMUD",
-                countDown: 5,
+                countDown: 10,
                 role: 0,
                 description: {
-                        bn: "যেকোনো ছবি থেকে বিস্তারিত প্রম্পট বা বর্ণনা তৈরি করুন",
-                        en: "Generate a detailed prompt or description from any image",
-                        vi: "Tạo lời nhắc hoặc mô tả chi tiết từ bất kỳ hình ảnh nào"
+                        en: "Generate AI image prompt for Midjourney, Flux, DALL-E, SD, Ideogram, Firefly, Gemini, or GPT",
+                        vi: "Tạo lời nhắc hình ảnh cho Midjourney, Flux, DALL-E, SD, Ideogram, Firefly, Gemini, hoặc GPT"
                 },
                 category: "ai",
                 guide: {
-                        bn: '   {pn}: একটি ছবিতে রিপ্লাই দিয়ে ব্যবহার করুন\n   {pn} <প্রশ্ন>: ছবির সাথে প্রশ্নও করতে পারেন',
-                        en: '   {pn}: Reply to an image\n   {pn} <custom prompt>: Ask specific about the image',
-                        vi: '   {pn}: Phản hồi một hình ảnh\n   {pn} <lời nhắc>: Hỏi cụ thể về hình ảnh'
+                        en: "   {pn} [--mj|--flux|--dalle|--sd|--ideo|--ff|--gemini|--gpt] [text]: Reply to an image to generate prompt"
+                                + "\n   Example:"
+                                + "\n    {pn}"
+                                + "\n    {pn} --flux"
+                                + "\n    {pn} --dalle cat with hat",
+                        vi: "   {pn} [--mj|--flux|--dalle|--sd|--ideo|--ff|--gemini|--gpt] [văn bản]: Phản hồi hình ảnh để tạo lời nhắc"
                 }
         },
 
         langs: {
-                bn: {
-                        noImg: "× বেবি, একটি ছবিতে রিপ্লাই দিয়ে কমান্ডটি ব্যবহার করো",
-                        error: "× সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।"
-                },
                 en: {
-                        noImg: "× Baby, please reply to an image to use this command!",
-                        error: "× API error: %1. Contact MahMUD for help."
+                        noImg: "× Baby, please reply to an image.",
+                        error: "× API error: %1. Contact MahMUD for help.\n•WhatsApp: 01836298139"
                 },
                 vi: {
                         noImg: "× Cưng ơi, vui lòng phản hồi một hình ảnh để sử dụng",
-                        error: "× Lỗi: %1. Liên hệ MahMUD để được hỗ trợ."
+                        error: "× Lỗi: %1. Liên hệ MahMUD để được hỗ trợ.\n•WhatsApp: 01836298139"
                 }
         },
 
@@ -51,30 +49,77 @@ module.exports = {
                         return message.reply(getLang("noImg"));
                 }
 
-                const prompt = args.join(" ") || "Describe this image in detail";
+                let model = "mj";
+                let hasFlag = true;
+
+                switch (args[0]?.toLowerCase()) {
+                        case "--flux":
+                        case "-flux":
+                        case "flux":
+                                model = "flux";
+                                break;
+                        case "--dalle":
+                        case "-dalle":
+                        case "--dall":
+                        case "-dall":
+                        case "dalle":
+                                model = "dalle";
+                                break;
+                        case "--sd":
+                        case "-sd":
+                        case "sd":
+                        case "sdxl":
+                                model = "sd";
+                                break;
+                        case "--ideo":
+                        case "-ideo":
+                        case "--ideogram":
+                        case "-ideogram":
+                        case "ideogram":
+                                model = "ideogram";
+                                break;
+                        case "--ff":
+                        case "-ff":
+                        case "--firefly":
+                        case "-firefly":
+                        case "firefly":
+                                model = "firefly";
+                                break;
+                        case "--gemini":
+                        case "-gemini":
+                        case "gemini":
+                                model = "gemini";
+                                break;
+                        case "--gpt":
+                        case "-gpt":
+                        case "gpt":
+                                model = "gpt";
+                                break;
+                        case "--mj":
+                        case "-mj":
+                        case "mj":
+                        case "midjourney":
+                                model = "mj";
+                                break;
+                        default:
+                                hasFlag = false;
+                                break;
+                }
+
+                const input = hasFlag ? args.slice(1).join(" ") : args.join(" ");
                 const imageUrl = event.messageReply.attachments[0].url;
 
                 try {
-                        const baseUrl = await mahmud();
-                        const apiUrl = `${baseUrl}/api/prompt`;
+                        api.setMessageReaction("⌛", event.messageID, () => {}, true);
 
-                        const response = await axios.post(apiUrl, {
-                                imageUrl,
-                                prompt
-                        }, {
-                                headers: { 
-                                        "Content-Type": "application/json", 
-                                        "author": authorName 
-                                }
-                        });
+                        const response = await axios.get(`${await mahmud()}/api/prompt?prompt=${encodeURIComponent(input.trim())}&url=${encodeURIComponent(imageUrl)}&model=${model}`
+                        );
 
                         const replyText = response.data.response || response.data.error || "No response";
-                        
                         message.reply(replyText);
                         return api.setMessageReaction("🪽", event.messageID, () => {}, true);
 
                 } catch (err) {
-                        console.error("Prompt AI Error:", err);
                         api.setMessageReaction("❌", event.messageID, () => {}, true);
                         return message.reply(getLang("error", err.message));
                 }
