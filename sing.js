@@ -74,7 +74,7 @@ module.exports = {
                                         body: getLang("success", search),
                                         attachment: stream
                                 }, (error, info) => {
-                                        api.setMessageReaction("✅", event.messageID, (error) => {}, true);
+                                        api.setMessageReaction("🪽", event.messageID, (error) => {}, true);
                                 });
 
                         } catch (error) {
@@ -98,7 +98,7 @@ module.exports = {
                                         body: getLang("videoSuccess", search),
                                         attachment: stream
                                 }, (error, info) => {
-                                        api.setMessageReaction("✅", event.messageID, (error) => {}, true);
+                                        api.setMessageReaction("🪽", event.messageID, (error) => {}, true);
                                 });
 
                         } catch (error) {
@@ -151,7 +151,7 @@ module.exports = {
                                         body: type === "video" ? getLang("version2video", realTitle) : getLang("version2audio", realTitle),
                                         attachment: stream
                                 }, (error, info) => {
-                                        api.setMessageReaction("✅", event.messageID, (error) => {}, true);
+                                        api.setMessageReaction("🪽", event.messageID, (error) => {}, true);
                                 });
 
                         } catch (error) {
@@ -195,7 +195,7 @@ module.exports = {
                                         body: type === "video" ? getLang("version3video", search) : getLang("version3audio", search),
                                         attachment: stream
                                 }, (error, info) => {
-                                        api.setMessageReaction("✅", event.messageID, (error) => {}, true);
+                                        api.setMessageReaction("🪽", event.messageID, (error) => {}, true);
                                 });
 
                         } catch (error) {
@@ -239,7 +239,7 @@ module.exports = {
                                         body: type === "video" ? getLang("version4video", search) : getLang("version4audio", search),
                                         attachment: stream
                                 }, (error, info) => {
-                                        api.setMessageReaction("✅", event.messageID, (error) => {}, true);
+                                        api.setMessageReaction("🪽", event.messageID, (error) => {}, true);
                                 });
 
                         } catch (error) {
