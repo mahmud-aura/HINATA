@@ -2,7 +2,7 @@ const axios = require("axios");
 const fs = require("fs-extra");
 const path = require("path");
 
-const baseApiUrl = async () => {
+const mahmud = async () => {
         const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
         return base.data.mahmud;
 };
@@ -11,66 +11,60 @@ module.exports = {
         config: {
                 name: "fun",
                 aliases: ["dig", "funny"],
-                version: "1.7",
+                version: "2.7",
                 author: "MahMUD",
                 countDown: 10,
                 role: 0,
                 category: "fun",
                 description: {
-                        bn: "বিভিন্ন ইমেজ ইফেক্ট দিয়ে মজার ছবি তৈরি করুন",
                         en: "Create funny images with various image effects",
                         vi: "Tạo ảnh hài hước với nhiều hiệu ứng hình ảnh khác nhau"
                 },
                 guide: {
-                        bn: "{pn} [টাইপ] [মেনশন/রিপ্লাই/UID] | {pn} list",
-                        en: "{pn} [type] [mention/reply/UID] | {pn} list",
-                        vi: "{pn} [loại] [gợi ý/trả lời/UID] | {pn} list"
+                        en: '   {pn} [type] @mention: Generate with mentioned user' +
+                                '\n   {pn} [type] [reply]: Generate with replied user' +
+                                '\n   {pn} [type] [UID]: Provide a user ID' +
+                                '\n   {pn} list: See all available effects',
+                        vi: '   {pn} [type] @mention: Tạo với người được nhắc' +
+                                '\n   {pn} [type] [reply]: Tạo với người đã trả lời' +
+                                '\n   {pn} [type] [UID]: Cung cấp UID' +
+                                '\n   {pn} list: Xem tất cả hiệu ứng'
                 }
         },
 
         langs: {
-                bn: {
-                        noType: "❌ বেবি, একটি ইফেক্ট টাইপ দাও! সব ইফেক্ট দেখতে টাইপ করো: !fun list",
-                        listFetchErr: "❌ ইফেক্ট লিস্ট লোড করতে ব্যর্থ হয়েছে।",
-                        noTarget: "❌ Please message reply or mention someone", // আপনার কাস্টম রিকোয়েস্ট অনুযায়ী চেঞ্জ করা হয়েছে
-                        authErr: "You are not authorized to change the author name.",
-                        error: "❌ সমস্যা হয়েছে: %1। প্রয়োজনে Contact MahMUD।\n•WhatsApp: 01836298139"
-                },
                 en: {
-                        noType: "❌ Provide a DIG type! Use 'fun list' to see all available effects.",
-                        listFetchErr: "❌ Failed to fetch the effects list.",
-                        noTarget: "❌ Please message reply or mention someone",
-                        authErr: "You are not authorized to change the author name.",
-                        error: "❌ Error occurred: %1. Contact MahMUD for help.\n•WhatsApp: 01836298139"
+                        noType: "Provide a DIG type! Use 'fun list' to see all available effects.",
+                        listFetchErr: "Failed to fetch the effects list.",
+                        noTarget: "Please message reply or mention someone",
+                        notFound: "× Effect not found\n• Type fun list to see available funny effects.",
+                        error: "API error: %1. Contact MahMUD for help.\n•WhatsApp: 01836298139"
                 },
                 vi: {
-                        noType: "❌ Vui lòng cung cấp loại hiệu ứng! Sử dụng 'fun list' để xem tất cả.",
-                        listFetchErr: "❌ Không thể tải danh sách hiệu ứng.",
-                        noTarget: "❌ Please message reply or mention someone",
-                        authErr: "You are not authorized to change the author name.",
-                        error: "❌ Đã xảy ra lỗi: %1. Liên hệ MahMUD để được hỗ trợ.\n•WhatsApp: 01836298139"
+                        noType: "Vui lòng cung cấp loại hiệu ứng! Sử dụng 'fun list' để xem tất cả.",
+                        listFetchErr: "Không thể tải danh sách hiệu ứng.",
+                        noTarget: "Please message reply or mention someone",
+                        notFound: "× Category not found\n• Type fun list to see available funny effects.",
+                        error: "API error: %1. Contact MahMUD for help.\n•WhatsApp: 01836298139"
                 }
         },
 
         onStart: async function ({ api, event, usersData, args, getLang }) {
                 const { threadID, messageID, messageReply, senderID, mentions } = event;
 
-                const obfuscatedAuthor = String.fromCharCode(77, 97, 104, 77, 85, 68);
-                if (this.config.author !== obfuscatedAuthor) {
-                        return api.sendMessage(getLang("authErr"), threadID, messageID);
-                }
+                const authorName = String.fromCharCode(77, 97, 104, 77, 85, 68);
+                if (this.config.author !== authorName) return api.sendMessage("You are not authorized to change the author name.", threadID, messageID);
 
                 const type = args[0]?.toLowerCase();
-                const baseUrl = await baseApiUrl();
 
                 if (!type) return api.sendMessage(getLang("noType"), threadID, messageID);
         
                 if (type === "list") {
                         try {
-                                const res = await axios.get(`${baseUrl}/api/dig/list`);
-                                let types = res.data.types || [];
-                                return api.sendMessage(`• Available Effects:\n\n${types.join(", ")}`, threadID, messageID);
-                        } catch (err) {
+                                const response = await axios.get(`${await mahmud()}/api/dig/list`);
+                                let types = response.data.types || [];
+                                return api.sendMessage(`• Available Funny Effects:\n\n${types.join(", ")}`, threadID, messageID);
+                        } catch (error) {
                                 return api.sendMessage(getLang("listFetchErr"), threadID, messageID);
                         }
                 }
@@ -88,18 +82,24 @@ module.exports = {
                 try {
                         api.setMessageReaction("⏳", messageID, () => { }, true);
 
-                        let url = `${baseUrl}/api/dig?type=${type}&user=${targetID}`;
                         let response;
-
                         try {
-                                response = await axios.get(url, { responseType: "arraybuffer" });
-                        } catch (err) {
-                                if (err.response && err.response.status === 400) {
-                                        url = `${baseUrl}/api/dig?type=${type}&user=${senderID}&user2=${targetID}`;
-                                        response = await axios.get(url, { responseType: "arraybuffer" });
-                                } else {
-                                        throw err; 
-                                }
+                           response = await axios.get(`${await mahmud()}/api/dig?type=${type}&user=${targetID}`, { responseType: "arraybuffer" });
+                        } catch (error) {
+                           if (error.response && error.response.status === 400) {
+                                        try {
+                       const errorJson = JSON.parse(error.response.data.toString());
+                       const errString = (errorJson.error || "").toLowerCase();
+                       if (errString.includes("not found") || errString.includes("invalid type")) {
+                           api.setMessageReaction("❌", messageID, () => { }, true);
+                           return api.sendMessage(getLang("notFound"), threadID, messageID);
+                                  }
+                          } catch (error) {}
+
+                                   response = await axios.get(`${await mahmud()}/api/dig?type=${type}&user=${senderID}&user2=${targetID}`, { responseType: "arraybuffer" });
+                          } else {
+                                throw error; 
+                             }
                         }
 
                         const isGif = ["trigger", "triggered"].includes(type);
@@ -129,16 +129,22 @@ module.exports = {
                                 if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
                         }, messageID);
 
-                } catch (err) {
+                } catch (error) {
                         api.setMessageReaction("❌", messageID, () => { }, true);
-                        let errMsg = err.message;
-                        if (err.response && err.response.data) {
+                        let errMsg = error.message;
+                        if (error.response && error.response.data) {
                                 try {
-                                        const errorJson = JSON.parse(err.response.data.toString());
-                                        if (errorJson.error) errMsg = errorJson.error;
-                                } catch (e) {}
+                        const errorJson = JSON.parse(error.response.data.toString());
+                        const errString = (errorJson.error || "").toLowerCase();
+                        if (errorJson.error) {
+                        if (errString.includes("not found") || errString.includes("invalid type")) {
+                        return api.sendMessage(getLang("notFound"), threadID, messageID);
+                         }
+                        errMsg = errorJson.error;
+                                        }
+                                } catch (error) {}
                         }
-                        console.error(err);
+                        console.error(error);
                         return api.sendMessage(getLang("error", errMsg), threadID, messageID);
                 }
         }
