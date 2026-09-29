@@ -1,8 +1,15 @@
 const axios = require("axios");
 
+const TRUSTED_MAHMUD_HOSTS = ["mahmud-apis-3f9x.onrender.com"];
+
 const mahmud = async () => {
   const base = await axios.get("https://raw.githubusercontent.com/mahmudx7/HINATA/main/baseApiUrl.json");
-  return base.data.mahmud;
+  const url = Array.isArray(base.data.mahmud) ? base.data.mahmud[0] : base.data.mahmud;
+  const { hostname, protocol } = new URL(url);
+  if (protocol !== "https:" || !TRUSTED_MAHMUD_HOSTS.includes(hostname)) {
+    throw new Error("Untrusted API base URL received");
+  }
+  return url;
 };
 
 module.exports = {
